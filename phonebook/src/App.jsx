@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 // Filter component
 
@@ -45,21 +45,22 @@ const Persons = ({ persons }) => {
     <div>
       {persons.map((person) => (
         <p key={person.id}>
-          {person.name} {person.phone}
+          {person.name} {person.number}
         </p>
       ))}
     </div>
   );
 };
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: "Arto Hellas", phone: "040-123456", id: 1 },
-    { name: "Ada Lovelace", phone: "39-44-5323523", id: 2 },
-    { name: "Dan Abramov", phone: "12-43-234345", id: 3 },
-    { name: "Mary Poppendieck", phone: "39-23-6423122", id: 4 },
-  ]);
+  const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [phone, setPhone] = useState("");
+
+  useEffect(() => {
+    fetch("http://localhost:3000/persons")
+      .then((res) => res.json())
+      .then((data) => setPersons(data));
+  }, []);
 
   const handleNameChange = (event) => {
     console.log(event.target.value);

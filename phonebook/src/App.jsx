@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import personsService from "./services/personsService";
+import "./index.css";
 
 // Filter component
 
@@ -10,6 +11,17 @@ const Filter = ({ handleFilterChange }) => {
       <h2>Filter</h2>
       <input type="text" onChange={handleFilterChange} />
     </div>
+  );
+};
+
+const Notification = ({ message }) => {
+  // should return success and error messages
+  if (message === null) {
+    return null;
+  }
+  return (
+    // check if message is success or error
+    <div className={message.type}>{message.text}</div>
   );
 };
 
@@ -42,7 +54,7 @@ const PersonForm = ({
 
 // persons component
 
-const Persons = ({ persons, setPersons }) => {
+const Persons = ({ persons, setPersons, setMessage }) => {
   const handleDelete = (id, name) => {
     return () => {
       const confirm = window.confirm(
@@ -51,6 +63,13 @@ const Persons = ({ persons, setPersons }) => {
       if (confirm) {
         personsService.deletePerson(id).then((res) => {
           console.log(res.data);
+          setMessage({
+            text: `Succesfully Removed  ${name} credentials from our records`,
+            type: "error",
+          });
+          setTimeout(() => {
+            setMessage(null);
+          }, 3000);
 
           personsService.getAll().then((res) => {
             console.log(res.data);
@@ -81,6 +100,7 @@ const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [phone, setPhone] = useState("");
+  const [message, setMessage] = useState({ text: null, type: null });
 
   useEffect(() => {
     personsService.getAll().then((res) => {
@@ -97,11 +117,11 @@ const App = () => {
     setPhone(event.target.value);
   };
 
-  // Add person logic
+  // Add person function
   const addPerson = (e) => {
     e.preventDefault();
     const personObject = {
-      id: Math.floor(Math.random() * 1000),
+      id: Math.floor(Math.random() * 1000), // give person random id btn 1-1000
       name: newName,
       phone: phone,
     };
@@ -111,6 +131,14 @@ const App = () => {
       personsService.create(personObject).then((res) => {
         console.log(res);
         setPersons(persons.concat(personObject));
+        // set success message and remove it after 3 seconds
+        setMessage({
+          text: `Added ${newName}`,
+          type: "success",
+        });
+        setTimeout(() => {
+          setMessage(null);
+        }, 3000);
         setNewName("");
         setPhone("");
       });
@@ -165,6 +193,7 @@ const App = () => {
 
   return (
     <div>
+      <Notification message={message} />
       <Filter handleFilterChange={handleFilterChange} />
       <h3>Add Contact</h3>
       <PersonForm
@@ -175,7 +204,11 @@ const App = () => {
         handlePhoneChange={handlePhoneChange}
       />
       <h2>Numbers</h2>
-      <Persons persons={persons} setPersons={setPersons} />
+      <Persons
+        persons={persons}
+        setMessage={setMessage}
+        setPersons={setPersons}
+      />
     </div>
   );
 };

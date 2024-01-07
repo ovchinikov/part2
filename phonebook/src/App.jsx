@@ -115,8 +115,35 @@ const App = () => {
         setPhone("");
       });
     }
-  };
+    // check if person exists in the phonebook using their phone number. If they do, ask the user using window.confirm(should ask using their name) and  update their existing number using axios
 
+    if (persons.find((person) => person.phone === phone)) {
+      const person = persons.find((person) => person.phone === phone);
+      const confirm = window.confirm(
+        `${person.name} is already added to phonebook, replace the old number with a new one?`
+      );
+      if (confirm) {
+        const changedPerson = { ...person, phone: phone };
+        personsService
+          .update(person.id, changedPerson)
+          .then((res) => {
+            console.log(res.data);
+            setPersons(
+              persons.map((person) =>
+                person.id !== changedPerson.id ? person : res.data
+              )
+            );
+            setNewName("");
+            setPhone("");
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      } else {
+        return;
+      }
+    }
+  };
   // filter people by name
 
   const handleFilterChange = (event) => {

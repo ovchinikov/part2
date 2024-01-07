@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import personsService from "./services/personsService";
 
 // Filter component
 
@@ -41,13 +42,37 @@ const PersonForm = ({
 
 // persons component
 
-const Persons = ({ persons }) => {
+const Persons = ({ persons, setPersons }) => {
+  const handleDelete = (id, name) => {
+    return () => {
+      const confirm = window.confirm(
+        `Are you sure you want to delete ${name}?`
+      );
+      if (confirm) {
+        personsService.deletePerson(id).then((res) => {
+          console.log(res.data);
+
+          personsService.getAll().then((res) => {
+            console.log(res.data);
+            setPersons(res.data);
+          });
+        });
+      } else {
+        return;
+      }
+    };
+  };
   return (
     <div>
       {persons.map((person) => (
-        <p key={person.id}>
-          {person.name} {person.phone}
-        </p>
+        <div key={person.id}>
+          <p>
+            {person.name} {person.phone}
+            <button onClick={handleDelete(person.id, person.name)}>
+              Delete
+            </button>
+          </p>
+        </div>
       ))}
     </div>
   );
@@ -58,34 +83,32 @@ const App = () => {
   const [phone, setPhone] = useState("");
 
   useEffect(() => {
-    axios.get("http://localhost:3000/persons").then((res) => {
+    personsService.getAll().then((res) => {
       console.log(res.data);
       setPersons(res.data);
     });
   }, []);
 
+  // handle Name change function
   const handleNameChange = (event) => {
-    console.log(event.target.value);
-
     setNewName(event.target.value);
   };
   const handlePhoneChange = (event) => {
-    console.log(event.target.value);
-
     setPhone(event.target.value);
   };
 
+  // Add person logic
   const addPerson = (e) => {
     e.preventDefault();
     const personObject = {
-      id: persons.length + 1,
+      id: Math.floor(Math.random() * 1000),
       name: newName,
       phone: phone,
     };
     if (persons.find((person) => person.name === newName)) {
       alert(`${newName} is already added to phonebook`);
     } else {
-      axios.post("http://localhost:3000/persons", personObject).then((res) => {
+      personsService.create(personObject).then((res) => {
         console.log(res);
         setPersons(persons.concat(personObject));
         setNewName("");
@@ -111,6 +134,8 @@ const App = () => {
     console.log(filteredPersons);
   };
 
+  // handleDelete function
+
   return (
     <div>
       <Filter handleFilterChange={handleFilterChange} />
@@ -123,7 +148,7 @@ const App = () => {
         handlePhoneChange={handlePhoneChange}
       />
       <h2>Numbers</h2>
-      <Persons persons={persons} />
+      <Persons persons={persons} setPersons={setPersons} />
     </div>
   );
 };

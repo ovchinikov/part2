@@ -115,8 +115,8 @@ const App = () => {
         setPhone("");
       });
     }
-    // check if person exists in the phonebook using their phone number. If they do, ask the user using window.confirm(should ask using their name) and  update their existing number using axios
 
+    // check if person already exists function
     if (persons.find((person) => person.phone === phone)) {
       const person = persons.find((person) => person.phone === phone);
       const confirm = window.confirm(

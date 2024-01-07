@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import axios from "axios";
 
 // Filter component
 
@@ -45,7 +46,7 @@ const Persons = ({ persons }) => {
     <div>
       {persons.map((person) => (
         <p key={person.id}>
-          {person.name} {person.number}
+          {person.name} {person.phone}
         </p>
       ))}
     </div>
@@ -57,9 +58,10 @@ const App = () => {
   const [phone, setPhone] = useState("");
 
   useEffect(() => {
-    fetch("http://localhost:3000/persons")
-      .then((res) => res.json())
-      .then((data) => setPersons(data));
+    axios.get("http://localhost:3000/persons").then((res) => {
+      console.log(res.data);
+      setPersons(res.data);
+    });
   }, []);
 
   const handleNameChange = (event) => {
@@ -83,9 +85,12 @@ const App = () => {
     if (persons.find((person) => person.name === newName)) {
       alert(`${newName} is already added to phonebook`);
     } else {
-      setPersons(persons.concat(personObject));
-      setNewName("");
-      setPhone("");
+      axios.post("http://localhost:3000/persons", personObject).then((res) => {
+        console.log(res);
+        setPersons(persons.concat(personObject));
+        setNewName("");
+        setPhone("");
+      });
     }
   };
 
